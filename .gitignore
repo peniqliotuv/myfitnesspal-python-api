@@ -1,0 +1,4 @@
+flask/*
+flask/lib/*
+flask/include/*
+flask/bin/*

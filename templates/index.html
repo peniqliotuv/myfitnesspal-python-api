@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8">
+    <script src = "{{ url_for('static', filename = 'script.js') }}"></script>
+  </head>
+  <body>
+    <div id="main">
+      <input type="text" name="username" id="username"/>
+      <input type="password" name="password" id="password"/>
+      <button onclick="submit()">Submit</button>
+    </div>
+
+    <div>
+      <input type="text" name="date" id="date" value="6/1/2017"/>
+      <button onclick="getDataByDate()">Get Data By Date</button>
+      <button onclick="getMealsByDate()">Get Meals By Date</button>
+    </div>
+
+  </body>
+</html>

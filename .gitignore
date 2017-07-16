@@ -2,3 +2,7 @@ flask/*
 flask/lib/*
 flask/include/*
 flask/bin/*
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc

@@ -15,7 +15,6 @@ function getDataByDate() {
   var month = date[0];
   var day = date[1];
   var year = date[2];
-
   fetch('/api/day/totals', {
     method: 'GET',
     headers: {
@@ -54,5 +53,51 @@ function getMealsByDate() {
   }).then(function(json) {
     console.log(json)
   });
-  
 }
+
+function getWaterByDate() {
+  var date = document.getElementById('date').value;
+    date = date.split('/');
+    var month = date[0];
+    var day = date[1];
+    var year = date[2];
+
+    fetch('/api/day/water', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+        "year": year,
+        "month": month,
+        "day": day
+      },
+      credentials: 'same-origin'
+    }).then(function(data){
+      return data.json();
+    }).then(function(json) {
+      console.log(json)
+    });
+}
+
+function getEntriesByDate() {
+  var date = document.getElementById('date').value;
+    date = date.split('/');
+    var month = date[0];
+    var day = date[1];
+    var year = date[2];
+
+    fetch('/api/day/entries', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+        "year": year,
+        "month": month,
+        "day": day
+      },
+      credentials: 'same-origin'
+    }).then(function(data){
+      return data.json();
+    }).then(function(json) {
+      console.log(json)
+    });
+}
+

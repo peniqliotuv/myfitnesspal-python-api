@@ -6,6 +6,8 @@ from beaker.middleware import SessionMiddleware
 import uuid
 import os
 import json
+from datetime import date
+from dateutil.rrule import rrule, DAILY
 import myfitnesspal
 from customexceptions import InvalidUsage
 
@@ -21,6 +23,37 @@ def get_date(request):
   month = request.headers['month']
   day = request.headers['day']
   return client.get_date(year, month, day)
+
+def get_date_range(request):
+  dates = []
+
+  client = clients[session['username']]
+
+  start_year = int(request.headers['start-year'])
+  start_month = int(request.headers['start-month'])
+  start_day = int(request.headers['start-day'])
+
+  end_year = int(request.headers['end-year'])
+  end_month = int(request.headers['end-month'])
+  end_day = int(request.headers['end-day'])
+
+  start = date(start_year, start_month, start_day)
+  end = date(end_year, end_month, end_day)
+
+  for dt in rrule(DAILY, dtstart=start, until=end):
+    year = int(dt.strftime("%Y"))
+    month = int(dt.strftime("%m"))
+    day = int(dt.strftime("%d"))
+
+    print(year)
+    print(month)
+    print(day)
+
+    print(type(year))
+
+    dates.append(client.get_date(year, month, day))
+  print(dates)
+  return dates  
 
 @app.errorhandler(InvalidUsage)
 def handle_error(error):
@@ -46,6 +79,7 @@ def login():
     else:
       try:
         client = myfitnesspal.Client(request.json['username'], request.json['password'])
+        print(dir(client))
         clients[request.json['username']] = client
         session['logged_in'] = True
         session['username'] = request.json['username']
@@ -106,6 +140,15 @@ def water():
   if 'username' in session:
     date = get_date(request)
     return jsonify(date.water)
+  else:
+    raise InvalidUsage('Access Denied', status_code=403)
+
+
+@app.route('/api/range/totals', methods=['GET'])
+def range_totals():
+  if 'username' in session:
+    date_range = get_date_range(request)
+    return jsonify(date_range)
   else:
     raise InvalidUsage('Access Denied', status_code=403)
 

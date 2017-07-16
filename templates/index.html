@@ -6,18 +6,29 @@
     <script src = "{{ url_for('static', filename = 'script.js') }}"></script>
   </head>
   <body>
+    <h1>/api/login/</h1>
     <div id="main">
       <input type="text" name="username" id="username"/>
       <input type="password" name="password" id="password"/>
       <button onclick="submit()">Submit</button>
     </div>
 
+    <h1>/api/day/</h1>
     <div>
       <input type="text" name="date" id="date" value="6/1/2017"/>
+      <br/>
       <button onclick="getDataByDate()">Get Data By Date</button>
       <button onclick="getMealsByDate()">Get Meals By Date</button>
       <button onclick="getWaterByDate()">Get Water By Date</button>
       <button onclick="getEntriesByDate()">Get Entries By Date</button>
+    </div>
+    <hr />
+    <h1>/api/range/</h1>
+    <div>
+      <input type="text" name="start" id="start" value="6/1/2017"/>
+      <input type="text" name="end" id="end" value="6/9/2017"/>
+      </br>
+      <button onclick="getRange()">Get Range</button>
     </div>
 
   </body>

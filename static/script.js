@@ -101,3 +101,39 @@ function getEntriesByDate() {
     });
 }
 
+
+
+function getRange() {
+  console.log('clicked')
+  var start = document.getElementById('start').value;
+  var end = document.getElementById('end').value;
+
+  start = start.split('/');
+  var startMonth = start[0];
+  var startDay = start[1];
+  var startYear = start[2];
+
+  end = end.split('/');
+  var endMonth = end[0];
+  var endDay = end[1];
+  var endYear = end[2];
+
+
+  fetch('/api/range/totals', {
+    method: 'GET',
+    headers: {
+      "Content-Type": "application/json",
+      "start-year": startYear,
+      "start-month": startMonth,
+      "start-day": startDay,
+      "end-year": endYear,
+      "end-month": endMonth,
+      "end-day": endDay,
+    },
+    credentials: 'same-origin'
+  }).then(function(data){
+    return data.json();
+  }).then(function(json) {
+    console.log(json)
+  });
+}

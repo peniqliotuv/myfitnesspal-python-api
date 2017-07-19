@@ -3,13 +3,23 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="utf-8">
-    <script src = "{{ url_for('static', filename = 'script.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.js"></script>
+    <style>
+      button {
+        border: 0;
+        background: none;
+        box-shadow:none;
+        background-color: lightblue;
+        margin: 5px;
+        border-radius: 5px;
+      }
+    </style>
   </head>
   <body>
     <h1>/api/login/</h1>
     <div id="main">
-      <input type="text" name="username" id="username"/>
-      <input type="password" name="password" id="password"/>
+      <input type="text" name="username" id="username" value="acuskec"/>
+      <input type="password" name="password" id="password" value="acuskev1"/>
       <button onclick="submit()">Submit</button>
     </div>
 
@@ -31,5 +41,12 @@
       <button onclick="getRange()">Get Range</button>
     </div>
 
+
+    <br></br>
+    <canvas id="myChart" width="400" height="400"></canvas>
+    <script src = "{{ url_for('static', filename = 'script.js') }}"></script>
+    <script>
+      
+    </script>
   </body>
 </html>

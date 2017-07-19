@@ -45,14 +45,13 @@ def get_date_range(request):
     month = int(dt.strftime("%m"))
     day = int(dt.strftime("%d"))
 
-    print(year)
-    print(month)
-    print(day)
+    # print(year)
+    # print(month)
+    # print(day)
 
-    print(type(year))
+    # print(type(year))
 
     dates.append(client.get_date(year, month, day))
-  print(dates)
   return dates  
 
 @app.errorhandler(InvalidUsage)
@@ -83,14 +82,14 @@ def login():
         clients[request.json['username']] = client
         session['logged_in'] = True
         session['username'] = request.json['username']
-        return jsonify({"success": True, "data": {"username": request.json['username']}}), 200
+        return jsonify(Success=True), 200
       except ValueError:
-        return jsonify({"success": False, "data": {"message": "invalid credentials"}}), 403
+        raise InvalidUsage('Invalid Credentials', status_code=401)
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
   if not session.get('logged_in'):
-    return jsonify({"success": False})
+    raise InvalidUsage('Not Logged In', status_code=401)
   else:
     session.clear()
     del clients[session.get('username')]
@@ -126,12 +125,12 @@ def entries():
   if 'username' in session:
     date = get_date(request)
     
-    jsonObj = {}
+    entries = {}
     for meal in date.meals:
       for entry in meal:
         entryDict = entry.get_as_dict()
-        jsonObj[entryDict['name']] = entryDict['nutrition_information'];
-    return jsonify(jsonObj)
+        entries[entryDict['name']] = entryDict['nutrition_information'];
+    return jsonify(entries)
   else:
     raise InvalidUsage('Access Denied', status_code=403)
 
@@ -148,7 +147,19 @@ def water():
 def range_totals():
   if 'username' in session:
     date_range = get_date_range(request)
-    return jsonify(date_range)
+
+    totals = {}
+    for day in date_range:
+      date = day.date.strftime('%m/%d/%Y')
+      totals[date] = day.totals
+    return jsonify(totals)
+  else:
+    raise InvalidUsage('Access Denied', status_code=403)
+
+@app.route('/api/range/meals', methods=['GET'])
+def range_meals():
+  if 'username' in session:
+    date_range = get_date_range(request)
   else:
     raise InvalidUsage('Access Denied', status_code=403)
 

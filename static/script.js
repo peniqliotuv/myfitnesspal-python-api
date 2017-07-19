@@ -1,3 +1,4 @@
+
 function submit() {
   var request = new XMLHttpRequest();
   request.open('POST', '/api/login', true);
@@ -28,6 +29,44 @@ function getDataByDate() {
     return data.json();
   }).then(function(json) {
     console.log(json)
+    var calories = json.calories;
+    var carbohydrates = json.carbohydrates * 4;
+    var protein = json.protein * 4;
+    var fat = json.fat * 9;
+
+
+    var ctx = document.getElementById("myChart").getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ["Carbohydrates", "Protein", "Fat"],
+            datasets: [{
+                label: 'Macronutrient Breakdown',
+                data: [carbohydrates, protein, fat],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(255,99,132,1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+          title: {
+            display: true,
+            text: "Macronutrient Breakdown"
+          },
+          legend: {
+            display: true,
+            
+          }
+        }
+    });
   });
   
 }

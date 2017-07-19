@@ -10,15 +10,19 @@ from datetime import date
 from dateutil.rrule import rrule, DAILY
 import myfitnesspal
 from customexceptions import InvalidUsage
-
+from utils import *
 
 app = Flask(__name__)
 
 clients = {}
 
 # Utility function to get the user:
+def get_client():
+  return clients[session['username']]
+
+
 def get_date(request):
-  client = clients[session['username']]
+  client = get_client()
   year = request.headers['year']
   month = request.headers['month']
   day = request.headers['day']
@@ -27,7 +31,7 @@ def get_date(request):
 def get_date_range(request):
   dates = []
 
-  client = clients[session['username']]
+  client = get_client()
 
   start_year = int(request.headers['start-year'])
   start_month = int(request.headers['start-month'])
@@ -44,15 +48,12 @@ def get_date_range(request):
     year = int(dt.strftime("%Y"))
     month = int(dt.strftime("%m"))
     day = int(dt.strftime("%d"))
-
-    # print(year)
-    # print(month)
-    # print(day)
-
-    # print(type(year))
-
     dates.append(client.get_date(year, month, day))
+    
   return dates  
+
+
+### Routes
 
 @app.errorhandler(InvalidUsage)
 def handle_error(error):
@@ -100,7 +101,6 @@ def totals():
   if 'username' in session:
     date = get_date(request)
     return jsonify(date.totals), 200
-
   else:
     raise InvalidUsage('Access Denied', status_code=403)
 
@@ -108,15 +108,7 @@ def totals():
 def meals():
   if 'username' in session:
     date = get_date(request)
-    
-    jsonObj = {}
-    for meal in date.meals:
-      mealObj = {}
-      for entry in meal:
-        entryDict = entry.get_as_dict()
-        mealObj[entryDict['name']] = entryDict['nutrition_information']
-      jsonObj[meal.name] = mealObj
-    return jsonify(jsonObj)
+    return jsonify(get_meals(date))
   else:
     raise InvalidUsage('Access Denied', status_code=403)
 
@@ -160,8 +152,26 @@ def range_totals():
 def range_meals():
   if 'username' in session:
     date_range = get_date_range(request)
+
+    meals = {}
+    for day in date_range:
+      date = day.date.strftime('%m/%d/%Y')
+      meals[date] = get_meals(day)
+    return jsonify(meals)
   else:
     raise InvalidUsage('Access Denied', status_code=403)
+
+
+@app.route('/api/measurement/weight', methods=['GET'])
+def get_weight_history():
+  if 'username' in session:
+    client = get_client()
+    weight = client.get_measurements('Weight')
+    return jsonify(weight)
+  else:
+    raise InvalidUsage('Access Denied', status_code=403)
+
+
 
 if __name__ == '__main__':
   app.secret_key = os.urandom(12)

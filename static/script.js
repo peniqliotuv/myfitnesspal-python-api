@@ -34,7 +34,6 @@ function getDataByDate() {
     var protein = json.protein * 4;
     var fat = json.fat * 9;
 
-
     var ctx = document.getElementById("myChart").getContext('2d');
     var myChart = new Chart(ctx, {
         type: 'doughnut',
@@ -159,6 +158,39 @@ function getRange() {
 
 
   fetch('/api/range/totals', {
+    method: 'GET',
+    headers: {
+      "Content-Type": "application/json",
+      "start-year": startYear,
+      "start-month": startMonth,
+      "start-day": startDay,
+      "end-year": endYear,
+      "end-month": endMonth,
+      "end-day": endDay,
+    },
+    credentials: 'same-origin'
+  }).then(function(data){
+    return data.json();
+  }).then(function(json) {
+    console.log(json)
+  });
+}
+
+function getMealsRange() {
+  var start = document.getElementById('start').value;
+  var end = document.getElementById('end').value;
+
+  start = start.split('/');
+  var startMonth = start[0];
+  var startDay = start[1];
+  var startYear = start[2];
+
+  end = end.split('/');
+  var endMonth = end[0];
+  var endDay = end[1];
+  var endYear = end[2];
+
+  fetch('/api/range/meals', {
     method: 'GET',
     headers: {
       "Content-Type": "application/json",

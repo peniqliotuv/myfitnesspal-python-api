@@ -52,7 +52,6 @@ def get_date_range(request):
     
   return dates  
 
-
 ### Routes
 
 @app.errorhandler(InvalidUsage)
@@ -96,6 +95,26 @@ def logout():
     del clients[session.get('username')]
     return index()
 
+### /api/day/
+@app.route('/api/day/weight', methods=['GET'])
+def get_weight():
+  if 'username' in session:
+    client = get_client()
+    year = int(request.headers['year'])
+    month = int(request.headers['month'])
+    day = int(request.headers['day'])
+    
+    currentDate = date(year, month, day)
+    try:
+      weight = client.get_measurements(currentDate, currentDate)
+      print(weight)
+      return jsonify(weight)
+    except ValueError:
+      return jsonify({}), 204
+
+  else:
+    raise InvalidUsage('Access Denied', status_code=403)
+
 @app.route('/api/day/totals', methods=['GET'])
 def totals():
   if 'username' in session:
@@ -134,7 +153,6 @@ def water():
   else:
     raise InvalidUsage('Access Denied', status_code=403)
 
-
 @app.route('/api/range/totals', methods=['GET'])
 def range_totals():
   if 'username' in session:
@@ -161,17 +179,28 @@ def range_meals():
   else:
     raise InvalidUsage('Access Denied', status_code=403)
 
-
-@app.route('/api/measurement/weight', methods=['GET'])
+@app.route('/api/range/weight', methods=['GET'])
 def get_weight_history():
   if 'username' in session:
     client = get_client()
-    weight = client.get_measurements('Weight')
-    return jsonify(weight)
+
+    start_year = int(request.headers['start-year'])
+    start_month = int(request.headers['start-month'])
+    start_day = int(request.headers['start-day'])
+
+    end_year = int(request.headers['end-year'])
+    end_month = int(request.headers['end-month'])
+    end_day = int(request.headers['end-day'])
+
+    start = date(start_year, start_month, start_day)
+    end = date(end_year, end_month, end_day)
+
+    weight = client.get_measurements('Weight', end, start)
+    res = {k.strftime('%Y/%m/%d') : v for k, v in weight.iteritems()}
+
+    return jsonify(res)
   else:
     raise InvalidUsage('Access Denied', status_code=403)
-
-
 
 if __name__ == '__main__':
   app.secret_key = os.urandom(12)

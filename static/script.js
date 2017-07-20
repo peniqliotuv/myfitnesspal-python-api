@@ -118,28 +118,49 @@ function getWaterByDate() {
 
 function getEntriesByDate() {
   var date = document.getElementById('date').value;
-    date = date.split('/');
-    var month = date[0];
-    var day = date[1];
-    var year = date[2];
+  date = date.split('/');
+  var month = date[0];
+  var day = date[1];
+  var year = date[2];
 
-    fetch('/api/day/entries', {
-      method: 'GET',
-      headers: {
-        "Content-Type": "application/json",
-        "year": year,
-        "month": month,
-        "day": day
-      },
-      credentials: 'same-origin'
-    }).then(function(data){
-      return data.json();
-    }).then(function(json) {
-      console.log(json)
-    });
+  fetch('/api/day/entries', {
+    method: 'GET',
+    headers: {
+      "Content-Type": "application/json",
+      "year": year,
+      "month": month,
+      "day": day
+    },
+    credentials: 'same-origin'
+  }).then(function(data){
+    return data.json();
+  }).then(function(json) {
+    console.log(json)
+  });
 }
 
+function getWeightByDate() {
+  var date = document.getElementById('date').value;
+  date = date.split('/');
+  var month = date[0];
+  var day = date[1];
+  var year = date[2];
 
+  fetch('/api/day/weight', {
+    method: 'GET',
+    headers: {
+      "Content-Type": "application/json",
+      "year": year,
+      "month": month,
+      "day": day
+    },
+    credentials: 'same-origin'
+  }).then(function(data){
+    return data.json();
+  }).then(function(json) {
+    console.log(json)
+  });
+}
 
 function getRange() {
   console.log('clicked')
@@ -191,6 +212,39 @@ function getMealsRange() {
   var endYear = end[2];
 
   fetch('/api/range/meals', {
+    method: 'GET',
+    headers: {
+      "Content-Type": "application/json",
+      "start-year": startYear,
+      "start-month": startMonth,
+      "start-day": startDay,
+      "end-year": endYear,
+      "end-month": endMonth,
+      "end-day": endDay,
+    },
+    credentials: 'same-origin'
+  }).then(function(data){
+    return data.json();
+  }).then(function(json) {
+    console.log(json)
+  });
+}
+
+function getWeightRange() {
+  var start = document.getElementById('start').value;
+  var end = document.getElementById('end').value;
+
+  start = start.split('/');
+  var startMonth = start[0];
+  var startDay = start[1];
+  var startYear = start[2];
+
+  end = end.split('/');
+  var endMonth = end[0];
+  var endDay = end[1];
+  var endYear = end[2];
+
+  fetch('/api/range/weight', {
     method: 'GET',
     headers: {
       "Content-Type": "application/json",

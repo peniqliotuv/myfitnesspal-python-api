@@ -11,6 +11,7 @@ from dateutil.rrule import rrule, DAILY
 import myfitnesspal
 from customexceptions import InvalidUsage
 from utils import *
+from collections import Counter
 
 app = Flask(__name__)
 
@@ -199,6 +200,32 @@ def get_weight_history():
     res = {k.strftime('%Y/%m/%d') : v for k, v in weight.iteritems()}
 
     return jsonify(res)
+  else:
+    raise InvalidUsage('Access Denied', status_code=403)
+
+@app.route('/api/range/entries', methods=['GET'])
+def get_entries_history():
+  if 'username' in session:
+    date_range = get_date_range(request)
+
+    entries = {}
+    for date in date_range:
+      for meal in date.meals:
+        for entry in meal:
+          if entry.short_name not in entries:
+            obj = {
+              'count': 1,
+              'nutrition': entry.nutrition_information
+            }
+            entries[entry.short_name] = obj
+          else:
+            entries[entry.short_name]['count'] += 1
+            old_entry = Counter(entries[entry.short_name]['nutrition'])
+            new_entry = Counter(entry.nutrition_information)
+            concat_entry = old_entry + new_entry
+            entries[entry.short_name]['nutrition'] = concat_entry
+              
+    return jsonify(entries)
   else:
     raise InvalidUsage('Access Denied', status_code=403)
 

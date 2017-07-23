@@ -1,5 +1,5 @@
 
-function submit() {
+function login() {
   var request = new XMLHttpRequest();
   request.open('POST', '/api/login', true);
   request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
@@ -8,6 +8,20 @@ function submit() {
     "password": document.getElementById('password').value
   };
   request.send(JSON.stringify(data));
+}
+
+function logout() {
+  fetch('/api/logout', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'same-origin'
+  }).then(function(data){
+    return data.json();
+  }).then(function(json) {
+    console.log(json);
+  });
 }
 
 function getDataByDate() {
@@ -280,7 +294,7 @@ function getEntriesRange() {
   fetch('/api/range/entries', {
     method: 'GET',
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/json; charset=utf-8",
       "start-year": startYear,
       "start-month": startMonth,
       "start-day": startDay,
@@ -295,3 +309,39 @@ function getEntriesRange() {
     console.log(json)
   });
 }
+
+/** /api/average/ */
+
+function getAverageTotals() {
+  var start = document.getElementById('start2').value;
+  var end = document.getElementById('end2').value;
+
+  start = start.split('/');
+  var startMonth = start[0];
+  var startDay = start[1];
+  var startYear = start[2];
+
+  end = end.split('/');
+  var endMonth = end[0];
+  var endDay = end[1];
+  var endYear = end[2];
+
+  fetch('/api/average/totals', {
+    method: 'GET',
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "start-year": startYear,
+      "start-month": startMonth,
+      "start-day": startDay,
+      "end-year": endYear,
+      "end-month": endMonth,
+      "end-day": endDay,
+    },
+    credentials: 'same-origin'
+  }).then(function(data){
+    return data.json();
+  }).then(function(json) {
+    console.log(json)
+  });
+}
+

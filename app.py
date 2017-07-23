@@ -45,13 +45,16 @@ def get_date_range(request):
   start = date(start_year, start_month, start_day)
   end = date(end_year, end_month, end_day)
 
-  for dt in rrule(DAILY, dtstart=start, until=end):
-    year = int(dt.strftime("%Y"))
-    month = int(dt.strftime("%m"))
-    day = int(dt.strftime("%d"))
-    dates.append(client.get_date(year, month, day))
-    
-  return dates  
+  if start > end:
+    raise InvalidUsage('Must enter valid date range.', status_code=400)
+  else:
+    for dt in rrule(DAILY, dtstart=start, until=end):
+      year = int(dt.strftime("%Y"))
+      month = int(dt.strftime("%m"))
+      day = int(dt.strftime("%d"))
+      dates.append(client.get_date(year, month, day))
+      
+    return dates  
 
 ### Routes
 
@@ -78,23 +81,24 @@ def login():
       return jsonify({"success": False, "data": {"message": "already logged in"}}), 200
     else:
       try:
-        client = myfitnesspal.Client(request.json['username'], request.json['password'])
-        print(dir(client))
-        clients[request.json['username']] = client
+        # Strip the unicode
+        username = str(request.json['username'])
+        client = myfitnesspal.Client(username, request.json['password'])
+        clients[username] = client
         session['logged_in'] = True
-        session['username'] = request.json['username']
+        session['username'] = username
         return jsonify(Success=True), 200
       except ValueError:
         raise InvalidUsage('Invalid Credentials', status_code=401)
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
-  if not session.get('logged_in'):
+  if 'username' not in session:
     raise InvalidUsage('Not Logged In', status_code=401)
   else:
+    del clients[session['username']]
     session.clear()
-    del clients[session.get('username')]
-    return index()
+    return jsonify(Success=True), 200
 
 ### /api/day/
 @app.route('/api/day/weight', methods=['GET'])
@@ -196,10 +200,12 @@ def get_weight_history():
     start = date(start_year, start_month, start_day)
     end = date(end_year, end_month, end_day)
 
-    weight = client.get_measurements('Weight', end, start)
-    res = {k.strftime('%Y/%m/%d') : v for k, v in weight.iteritems()}
-
-    return jsonify(res)
+    if start > end:
+      raise InvalidUsage('Must enter valid date range', status_code=400)
+    else:
+      weight = client.get_measurements('Weight', end, start)
+      res = {k.strftime('%Y/%m/%d') : v for k, v in weight.iteritems()}
+      return jsonify(res)
   else:
     raise InvalidUsage('Access Denied', status_code=403)
 
@@ -226,6 +232,30 @@ def get_entries_history():
             entries[entry.short_name]['nutrition'] = concat_entry
               
     return jsonify(entries)
+  else:
+    raise InvalidUsage('Access Denied', status_code=403)
+
+# Averages
+@app.route('/api/average/totals', methods=['GET'])
+def average_totals():
+  if 'username' in session:
+    date_range = get_date_range(request)
+
+    totals = Counter(date_range[0].totals)
+    days = len(date_range)
+
+    if not totals:
+      days -= 1
+
+    for day in date_range[1:]:
+      date = day.date.strftime('%m/%d/%Y')
+      if day.totals:
+        totals += Counter(day.totals)
+      else:
+        days -= 1
+    for key in totals:
+      totals[key] /= days
+    return jsonify({'totals': totals, 'trackedDays': days})
   else:
     raise InvalidUsage('Access Denied', status_code=403)
 

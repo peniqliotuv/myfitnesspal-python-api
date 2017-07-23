@@ -26,7 +26,8 @@
     <div id="main">
       <input type="text" name="username" id="username" value="acuskec"/>
       <input type="password" name="password" id="password" value="acuskev1"/>
-      <button onclick="submit()">Submit</button>
+      <button onclick="login()">Login</button>
+      <button onclick="logout()">Logout</button>
     </div>
 
     <h1>/api/day/</h1>
@@ -49,6 +50,14 @@
       <button onclick="getMealsRange()">Get Meals in range</button>
       <button onclick="getWeightRange()">Get Weight in range</button>
       <button onclick="getEntriesRange()">Get Entries in range</button>
+    </div>
+
+    <h1>/api/average/</h1>
+    <div>
+      <input type="text" name="start2" id="start2" value="6/1/2017"/>
+      <input type="text" name="end2" id="end2" value="6/9/2017"/>
+      </br>
+      <button onclick="getAverageTotals()">Get Average Daily Totals</button>
     </div>
 
 

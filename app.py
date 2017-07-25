@@ -1,6 +1,7 @@
 #!flask/bin/python
 from flask import Flask
 from flask import request, jsonify, abort, session, render_template
+from flask_cors import CORS, cross_origin
 from flask.sessions import SessionInterface
 from beaker.middleware import SessionMiddleware
 import uuid
@@ -14,6 +15,7 @@ from utils import *
 from collections import Counter
 
 app = Flask(__name__)
+CORS(app)
 
 clients = {}
 
@@ -87,7 +89,7 @@ def login():
         clients[username] = client
         session['logged_in'] = True
         session['username'] = username
-        return jsonify(Success=True), 200
+        return jsonify(success=True), 200
       except ValueError:
         raise InvalidUsage('Invalid Credentials', status_code=401)
 

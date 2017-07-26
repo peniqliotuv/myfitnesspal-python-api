@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <img src="./assets/logo.png">
-    <login></login>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -9,10 +9,7 @@
 import Login from './components/Login.vue';
 
 export default {
-  name: 'app',
-  components: {
-    Login
-  }
+  name: 'app'
 }
 </script>
 

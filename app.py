@@ -241,6 +241,7 @@ def get_entries_history():
 @app.route('/api/average/totals', methods=['GET'])
 def average_totals():
   if 'username' in session:
+    print(session)
     date_range = get_date_range(request)
 
     totals = Counter(date_range[0].totals)

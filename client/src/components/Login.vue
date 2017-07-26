@@ -15,6 +15,9 @@
     <div class="button-container">
       <button class="waves-effect waves-light btn" @click="handleLogin()">Login</button>
     </div>
+    <div v-if="this.isAuthenticating">
+      Authenticating...
+    </div>
   </div>
 </template>
 
@@ -26,11 +29,12 @@ export default {
       username: '',
       password: '',
       isLoggedIn: false,
+      isAuthenticating: false,
     }
   },
   methods: {
     async handleLogin() {
-      console.log(this.username, this.password);
+      this.isAuthenticating = true;
       const url = 'http://localhost:5000/api/login';
       const { username, password } = this;
       const response = await fetch(url, {
@@ -47,7 +51,13 @@ export default {
       } else {
         this.isLoggedIn = false;
       }
-      console.log(this.isLoggedIn);
+      this.redirect(this.username);
+    },
+    redirect(username) {
+      this.$router.push({ 
+        path: 'home', 
+        params: { username },
+      });
     }
   }
 }

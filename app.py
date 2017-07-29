@@ -11,7 +11,10 @@ import myfitnesspal
 from customexceptions import InvalidUsage
 from utils import *
 from collections import Counter
-from flask_login import LoginManager, login_required
+# from tornado.wsgi import WSGIContainer
+# from tornado.httpserver import HTTPServer
+# from tornado.ioloop import IOLoop
+
 
 class CustomFlask(Flask):
   jinja_options = Flask.jinja_options.copy()
@@ -24,23 +27,18 @@ class CustomFlask(Flask):
   comment_end_string='#$',
 ))
 
+# Allow flask to serve static files
 template_dir = os.path.abspath('./client/')
 assets_dir = os.path.abspath('./client/dist')
 app = CustomFlask(__name__, template_folder=template_dir)
 
+# Enable CORS
 CORS(app)
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.get(user_id)
 
 @app.route('/') 
 def index():
   return render_template('index.html')
-
+# Send static files
 @app.route('/dist/<path:path>')
 def serve_assets(path):
   return send_from_directory(assets_dir, path)
@@ -61,7 +59,6 @@ def get_date(request):
 
 def get_date_range(request):
   dates = []
-
   client = get_client()
 
   start_year = int(request.headers['start-year'])
@@ -98,14 +95,13 @@ def handle_error(error):
 def session_management():
   session.permanent = True
 
-
 @app.route('/api/login', methods=['POST'])
 def login():
   if not request.json or not 'username' in request.json or not 'password' in request.json:
     return jsonify({"error": "Invalid request format"}), 404
   else:
     if session.get('logged_in'):
-      return jsonify({"success": False, "data": {"message": "already logged in"}}), 200
+      return jsonify(success=True), 200
     else:
       try:
         # Strip the unicode
@@ -288,13 +284,18 @@ def average_totals():
   else:
     raise InvalidUsage('Access Denied', status_code=403)
 
-@app.route('/test', methods=['GET'])
-def test():
-  print('User is downloading file')
-  uploads = os.path.join(os.getcwd(), 'static')
-  return send_from_directory(directory=uploads, filename='app.apk', as_attachment=True, attachment_filename='app.apk')
+
+# @app.route('/test', methods=['GET'])
+# def test():
+#   print('User is downloading file')
+#   uploads = os.path.join(os.getcwd(), 'static')
+#   return send_from_directory(directory=uploads, filename='app.apk', as_attachment=True, attachment_filename='app.apk')
 
 
 if __name__ == '__main__':
+  # app.secret_key = os.urandom(12)
+  # http_server = HTTPServer(WSGIContainer(app))
+  # http_server.listen(5000)
+  # IOLoop.instance().start()
   app.secret_key = os.urandom(12)
-  app.run(debug=True)
+  app.run(port=5000, threaded=True)

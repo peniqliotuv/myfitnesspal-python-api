@@ -1,9 +1,7 @@
 #!flask/bin/python
 from flask import Flask
-from flask import request, jsonify, abort, session, render_template
+from flask import request, jsonify, abort, session, render_template, send_from_directory
 from flask_cors import CORS, cross_origin
-from flask.sessions import SessionInterface
-from beaker.middleware import SessionMiddleware
 import uuid
 import os
 import json
@@ -13,9 +11,39 @@ import myfitnesspal
 from customexceptions import InvalidUsage
 from utils import *
 from collections import Counter
+from flask_login import LoginManager, login_required
 
-app = Flask(__name__)
+class CustomFlask(Flask):
+  jinja_options = Flask.jinja_options.copy()
+  jinja_options.update(dict(
+  block_start_string='$$',
+  block_end_string='$$',
+  variable_start_string='$',
+  variable_end_string='$',
+  comment_start_string='$#',
+  comment_end_string='#$',
+))
+
+template_dir = os.path.abspath('./client/')
+assets_dir = os.path.abspath('./client/dist')
+app = CustomFlask(__name__, template_folder=template_dir)
+
 CORS(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id)
+
+@app.route('/') 
+def index():
+  return render_template('index.html')
+
+@app.route('/dist/<path:path>')
+def serve_assets(path):
+  return send_from_directory(assets_dir, path)
 
 clients = {}
 
@@ -70,9 +98,6 @@ def handle_error(error):
 def session_management():
   session.permanent = True
 
-@app.route('/')
-def index():
-  return render_template('index.html')
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -89,6 +114,7 @@ def login():
         clients[username] = client
         session['logged_in'] = True
         session['username'] = username
+        print(session)
         return jsonify(success=True), 200
       except ValueError:
         raise InvalidUsage('Invalid Credentials', status_code=401)
@@ -240,8 +266,8 @@ def get_entries_history():
 # Averages
 @app.route('/api/average/totals', methods=['GET'])
 def average_totals():
+  print(session)
   if 'username' in session:
-    print(session)
     date_range = get_date_range(request)
 
     totals = Counter(date_range[0].totals)
@@ -261,6 +287,13 @@ def average_totals():
     return jsonify({'totals': totals, 'trackedDays': days})
   else:
     raise InvalidUsage('Access Denied', status_code=403)
+
+@app.route('/test', methods=['GET'])
+def test():
+  print('User is downloading file')
+  uploads = os.path.join(os.getcwd(), 'static')
+  return send_from_directory(directory=uploads, filename='app.apk', as_attachment=True, attachment_filename='app.apk')
+
 
 if __name__ == '__main__':
   app.secret_key = os.urandom(12)

@@ -2,18 +2,17 @@
 from flask import Flask
 from flask import request, jsonify, abort, session, render_template, send_from_directory
 from flask_cors import CORS, cross_origin
+from flask_login import LoginManager, login_user, login_required, logout_user
 import uuid
 import os
 import json
 from datetime import date
 from dateutil.rrule import rrule, DAILY
 import myfitnesspal
-from customexceptions import InvalidUsage
-from utils import *
+from server.utils import *
+from server.models import db, User
+from server.customexceptions import InvalidUsage
 from collections import Counter
-# from tornado.wsgi import WSGIContainer
-# from tornado.httpserver import HTTPServer
-# from tornado.ioloop import IOLoop
 
 
 class CustomFlask(Flask):
@@ -27,13 +26,24 @@ class CustomFlask(Flask):
   comment_end_string='#$',
 ))
 
-# Allow flask to serve static files
 template_dir = os.path.abspath('./client/')
 assets_dir = os.path.abspath('./client/dist')
 app = CustomFlask(__name__, template_folder=template_dir)
-
-# Enable CORS
+db_path = os.path.join(os.path.dirname(__file__), 'server/db/app.sqlite')
+db_uri = 'sqlite:///{}'.format(db_path)
+app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 CORS(app)
+
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(username):
+  return User.query.filter_by(username = username).first()
+
+######## ROUTES ##############
 
 @app.route('/') 
 def index():
@@ -110,8 +120,16 @@ def login():
         clients[username] = client
         session['logged_in'] = True
         session['username'] = username
-        print(session)
-        return jsonify(success=True), 200
+        print('Querying...')
+        if User.query.filter_by(username=username).first():
+          print("Successful login.")
+          return jsonify(success=True), 200
+        else:
+          newUser = User(username, request.json['password'])
+          db.session.add(newUser)
+          db.session.commit()
+          print("User created.")
+          return jsonify(success=True), 200
       except ValueError:
         raise InvalidUsage('Invalid Credentials', status_code=401)
 
@@ -285,17 +303,9 @@ def average_totals():
     raise InvalidUsage('Access Denied', status_code=403)
 
 
-# @app.route('/test', methods=['GET'])
-# def test():
-#   print('User is downloading file')
-#   uploads = os.path.join(os.getcwd(), 'static')
-#   return send_from_directory(directory=uploads, filename='app.apk', as_attachment=True, attachment_filename='app.apk')
-
-
 if __name__ == '__main__':
-  # app.secret_key = os.urandom(12)
-  # http_server = HTTPServer(WSGIContainer(app))
-  # http_server.listen(5000)
-  # IOLoop.instance().start()
+  db.init_app(app)
+  db.app = app
+  db.create_all()
   app.secret_key = os.urandom(12)
   app.run(port=5000, threaded=True)

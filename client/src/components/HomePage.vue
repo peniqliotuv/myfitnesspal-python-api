@@ -14,7 +14,6 @@
 <script>
 import { fetchInitialData } from '../api/monthly';
 
-
 export default {
   name: 'HomePage',
   data() {

@@ -1,4 +1,3 @@
-
 def get_meals(date):
   jsonObj = {}
   for meal in date.meals:
